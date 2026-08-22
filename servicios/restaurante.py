@@ -1,10 +1,14 @@
 from modelos.producto import Producto
 from modelos.usuario import Usuario
+from servicios.archivo_servicio import ArchivoServicio
 
 class Restaurante:
     def __init__(self) -> None:
-        # LISTAS para colecciones dinámicas de objetos
-        self._productos: list[Producto] = []
+        # Inicializar el servicio de archivos para JSON
+        self.archivo_servicio = ArchivoServicio()
+        
+        # LISTAS para colecciones dinámicas de objetos (cargadas desde el JSON)
+        self._productos: list[Producto] = self.archivo_servicio.cargar_productos()
         self._usuarios: list[Usuario] = []
 
     # --- GESTIÓN DE PRODUCTOS ---
@@ -14,6 +18,8 @@ class Restaurante:
                 print(f"❌ Error: Ya existe un producto con el código '{producto.codigo}'.")
                 return False
         self._productos.append(producto)
+        # Guardar cambios en el archivo JSON
+        self.archivo_servicio.guardar_productos(self._productos)
         print(f"✅ Producto '{producto.nombre}' registrado con éxito.")
         return True
 
@@ -29,6 +35,8 @@ class Restaurante:
             producto.nombre = nuevo_nombre
             producto.categoria = nueva_categoria
             producto.precio = nuevo_precio
+            # Guardar cambios en el archivo JSON
+            self.archivo_servicio.guardar_productos(self._productos)
             print(f"✅ Producto '{codigo}' actualizado correctamente.")
             return True
         print(f"❌ Error: Producto con código '{codigo}' no encontrado.")
@@ -38,7 +46,9 @@ class Restaurante:
         producto = self.buscar_producto(codigo)
         if producto:
             self._productos.remove(producto)
-            print(f"🗑️ Producto '{codigo}' eliminado exitosamente.")
+            # Guardar cambios en el archivo JSON
+            self.archivo_servicio.guardar_productos(self._productos)
+            print(f"✅ Producto '{codigo}' eliminado exitosamente.")
             return True
         print(f"❌ Error: No se encontró el producto a eliminar.")
         return False
